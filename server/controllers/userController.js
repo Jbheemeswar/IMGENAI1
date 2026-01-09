@@ -1,41 +1,50 @@
 import userModel from "../models/userModel.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import transactionModel from "../models/transactionModel.js";
-// import Razorpay from "razorpay";
+//import transactionModel from "../models/transactionModel.js";
 
 /* -------------------------------------------------
-   REGISTER
+   REGISTER (NAME + EMAIL ONLY)
 ------------------------------------------------- */
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email) {
       return res.json({
         success: false,
         message: "Missing fields"
       });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
+    // Check if user already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.json({
+        success: false,
+        message: "User already exists"
+      });
+    }
 
     const user = await userModel.create({
       name,
       email,
-      password: hash
+      creditBalance: 5 // default free credits
     });
 
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
     res.json({
       success: true,
       token,
-      user: { name: user.name }
+      user: {
+        name: user.name,
+        email: user.email,
+        credits: user.creditBalance
+      }
     });
 
   } catch (error) {
@@ -48,11 +57,18 @@ const registerUser = async (req, res) => {
 
 
 /* -------------------------------------------------
-   LOGIN  (EMAIL-ONLY ACCESS)
+   LOGIN (EMAIL ONLY)
 ------------------------------------------------- */
 const loginUser = async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!email) {
+      return res.json({
+        success: false,
+        message: "Email is required"
+      });
+    }
 
     const user = await userModel.findOne({ email });
 
@@ -63,18 +79,20 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // ✅ Password check removed completely
-    // Email alone is enough to login
-
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
     res.json({
       success: true,
       token,
-      user: { name: user.name }
+      user: {
+        name: user.name,
+        email: user.email,
+        credits: user.creditBalance
+      }
     });
 
   } catch (error) {
@@ -91,14 +109,15 @@ const loginUser = async (req, res) => {
 ------------------------------------------------- */
 const userCredits = async (req, res) => {
   try {
-    const user = await userModel
-      .findById(req.user.id)
-      .select("-password");
+    const user = await userModel.findById(req.user.id);
 
     res.json({
       success: true,
       credits: user.creditBalance,
-      user: { name: user.name }
+      user: {
+        name: user.name,
+        email: user.email
+      }
     });
 
   } catch (error) {
@@ -111,7 +130,7 @@ const userCredits = async (req, res) => {
 
 
 /* -------------------------------------------------
-   PAYMENT (RAZORPAY)
+   PAYMENT (KEEP FOR FUTURE / OPTIONAL)
 ------------------------------------------------- */
 const paymentRazorpay = async (req, res) => {
   try {
@@ -153,12 +172,6 @@ const paymentRazorpay = async (req, res) => {
       credits,
       date: Date.now()
     });
-
-    // const order = await razorpayInstance.orders.create({
-    //   amount: amount * 100,
-    //   currency: "INR",
-    //   receipt: transaction._id.toString()
-    // });
 
     res.json({
       success: true,

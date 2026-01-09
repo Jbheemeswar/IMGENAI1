@@ -13,10 +13,22 @@ const PORT = process.env.PORT || 4000;
 
 // middleware
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-// connect database
-connectDB();
+// 🔥 REQUIRED CORS FIX
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://imgen-backend.onrender.com",
+      "https://sage-centaur-e02cb3.netlify.app"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
+);
+
+//app.options("*", cors());
 
 // routes
 app.use("/api/users", userRouter);
@@ -29,7 +41,16 @@ app.get("/", (req, res) => {
   res.send("API Working well");
 });
 
-// start server
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+// start server AFTER DB connect
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log("Server running on port " + PORT);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+  }
+};
+
+startServer();

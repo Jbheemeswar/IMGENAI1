@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UPI_ID = "juttigabheemeswar-1@okicici";
 const QR_IMAGE = "/upi-qr.png";
@@ -9,91 +10,106 @@ const plans = [
   { id: "Business", price: 250, credits: 5000 },
 ];
 
-function BuyCredit(){
-
-  const [selectedPlan, setSelectedPlan] = useState(null);   
-  const [file, setFile] = useState(null);
+function BuyCredit() {
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const navigate = useNavigate();
 
   const submitProof = () => {
-
-    if(!selectedPlan){
+    if (!selectedPlan) {
       alert("Please select a plan first");
       return;
     }
 
-    if(!file){
-      alert("Please upload payment screenshot");
-      return;
-    }
-
-    window.location.href =
-      `http://localhost/Sendingmail/payment_mail.php?plan=${selectedPlan}`;
+    const planObj = plans.find(p => p.id === selectedPlan);
+    navigate("/payment", { state: { plan: planObj } });
   };
 
-
   return (
-    <div className="min-h-screen from-white to-orange-50 text-center py-10">
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-slate-50 via-white to-slate-100 px-4">
 
-      <h1 className="text-3xl font-bold mb-6">Choose a Plan</h1>
-
-      <div className="flex gap-6 justify-center my-6">
-
-        {plans.map(p => (
-          <div
-            key={p.id}
-            className={`p-6 rounded-xl shadow cursor-pointer border transition transform
-            ${selectedPlan===p.id ? "border-black scale-105 bg-white"
-            : "border-gray-300 bg-gray-50"}`}
-            onClick={()=>setSelectedPlan(p.id)}
-          >
-            <p className="font-semibold">{p.id}</p>
-            <p className="text-2xl mt-1">₹{p.price}</p>
-            <p className="text-sm mt-1 opacity-70">{p.credits} credits</p>
-          </div>
-        ))}
-
-      </div>
-
-      {!selectedPlan && (
-        <p className="text-sm text-red-600 mt-[-10px]">
-          Please select a plan
-        </p>
-      )}
-
-      <h2 className="text-lg font-semibold mt-6">Pay using UPI</h2>
-      <p className="text-sm opacity-60">Scan this QR</p>
-
-      <img src={QR_IMAGE} className="mx-auto w-40 my-4" />
-
-      <p className="font-mono">
-        <b>{UPI_ID}</b>
-      </p>
-
-      <p className="text-xs opacity-50 mt-1">
-        Pay exact amount as per selected plan
-      </p>
-
-      <div className="mt-8">
-
-        <label className="bg-black text-white px-5 py-2 rounded cursor-pointer">
-          Upload Screenshot
-          <input type="file" hidden onChange={e=>setFile(e.target.files[0])}/>
-        </label>
-
-        {file && (
-          <p className="mt-2 text-sm opacity-70">
-            Selected: {file.name}
-          </p>
-        )}
-      </div>
-
-      <button
-        onClick={submitProof}
-        className="bg-black text-white px-6 py-2 rounded mt-6"
+      {/* MAIN CARD */}
+      <div
+        className="w-[460px] rounded-3xl shadow-2xl p-10
+        bg-gradient-to-br from-indigo-50 via-white to-cyan-50
+        backdrop-blur-md border border-white/60"
       >
-        Submit Payment Proof
-      </button>
 
+        {/* TITLE */}
+        <h2 className="text-3xl font-bold text-center text-gray-900">
+          Upgrade Your Credits
+        </h2>
+        <p className="text-lg text-center text-gray-700 mt-2 mb-6">
+          Get more image generations instantly!
+        </p>
+
+        {/* FEATURES */}
+        <div className="flex justify-center gap-6 text-sm mb-7 text-gray-600">
+          <span>⚡ Instant access</span>
+          <span>🔒 Secure payment</span>
+          <span>✨ High-quality</span>
+        </div>
+
+        {/* PLANS */}
+        <div className="space-y-5">
+          {plans.map(p => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedPlan(p.id)}
+              className={`flex justify-between items-center rounded-2xl px-6 py-5 cursor-pointer transition-all
+              border
+              ${selectedPlan === p.id
+                ? "border-black bg-white/70 shadow-md"
+                : "border-gray-200 bg-white/40 hover:bg-white/60"}`}
+            >
+              <div>
+                <p className="text-xl font-semibold text-gray-900">
+                  {p.id}
+                </p>
+                <p className="text-base text-gray-600">
+                  {p.credits} credits
+                </p>
+              </div>
+              <p className="text-xl font-bold text-gray-900">
+                ₹{p.price}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* UPI SECTION */}
+        <div className="bg-white/60 rounded-2xl p-6 mt-8 text-center backdrop-blur-sm">
+          <p className="text-lg font-semibold text-gray-900 mb-3">
+            Pay via UPI
+          </p>
+
+          <img
+            src={QR_IMAGE}
+            alt="UPI QR"
+            className="w-40 mx-auto mb-3"
+          />
+
+          <p className="text-base font-mono text-gray-900">
+            {UPI_ID}
+          </p>
+
+          <p className="text-sm text-gray-600 mt-2">
+            Use any UPI app (GPay, PhonePe, Paytm)
+          </p>
+        </div>
+
+        {/* CONTINUE BUTTON */}
+        <button
+          onClick={submitProof}
+          className="w-full bg-black text-white text-xl py-3.5 rounded-full mt-8 hover:opacity-90 transition"
+        >
+          Continue
+        </button>
+
+        <p className="text-sm text-center text-gray-600 mt-4">
+          Credits will be added after payment verification
+        </p>
+
+      </div>
     </div>
   );
 }
