@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS
+// ✅ CORS (NO app.options)
 app.use(
   cors({
     origin: [
@@ -26,8 +26,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
-
-app.options("*", cors());
 
 // routes
 app.use("/api/users", userRouter);
