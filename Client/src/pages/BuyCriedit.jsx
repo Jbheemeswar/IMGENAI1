@@ -5,9 +5,9 @@ const UPI_ID = "juttigabheemeswar-1@okicici";
 const QR_IMAGE = "/upi-qr.png";
 
 const plans = [
-  { id: "Basic", price: 10, credits: 100 },
-  { id: "Advanced", price: 50, credits: 500 },
-  { id: "Business", price: 250, credits: 5000 },
+  { id: "Basic", price: 50, credits: 10 },
+  { id: "Advanced", price: 100, credits: 20 },
+  { id: "Business", price: 150, credits: 30 },
 ];
 
 function BuyCredit() {
